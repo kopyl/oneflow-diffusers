@@ -1,5 +1,5 @@
 """
-example: python examples/text_to_image.py --height 512 --width 512 --warmup 10 --model_id xx
+example: python t.py --model_id workspace/sd-1_5-icons-172800_steps-4e_7 --compiled_graph_path workspace/test --prompt "an icon of a star" --steps 30 --seed 5
 """
 import argparse
 from onediff.infer_compiler import oneflow_compile, oneflow_load_compiled
