@@ -6,7 +6,6 @@ from onediff.infer_compiler import oneflow_compile, oneflow_load_compiled
 from onediff.schedulers import EulerDiscreteScheduler
 from onediff.optimization import rewrite_self_attention
 from diffusers import StableDiffusionPipeline
-import oneflow as flow
 import torch
 import os
 
@@ -54,16 +53,16 @@ else:
     pipe.unet = oneflow_load_compiled(pipe.unet, args.compiled_graph_path, device="cuda")
 
 prompt = args.prompt
-with flow.autocast("cuda"):
-    torch.manual_seed(args.seed)
 
-    images = pipe(
-        prompt, height=args.height, width=args.width, num_inference_steps=args.steps
-    ).images
+torch.manual_seed(args.seed)
 
-    if not compiled_graph_exists:
-        print("Saving compiled graph")
-        pipe.unet.save_graph(args.compiled_graph_path)
+images = pipe(
+    prompt, height=args.height, width=args.width, num_inference_steps=args.steps
+).images
 
-    for i, image in enumerate(images):
-        image.save(f"{prompt}-of-{i}.png")
+if not compiled_graph_exists:
+    print("Saving compiled graph")
+    pipe.unet.save_graph(args.compiled_graph_path)
+
+for i, image in enumerate(images):
+    image.save(f"{prompt}-of-{i}.png")
