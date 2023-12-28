@@ -1,0 +1,33 @@
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apt update && apt install -y python3 wget python-is-python3
+RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
+
+RUN apt update && apt install --no-install-recommends -y git
+
+RUN \
+    pip install git+https://github.com/kopyl/oneflow-diffusers.git && \
+    pip install \
+        torch==2.0.1+cu118 \
+        --extra-index-url https://download.pytorch.org/whl/cu118 && \
+    pip install xformers==0.0.20 && \
+    pip install transformers==4.27.1 && \
+    pip install diffusers[torch]==0.19.3 && \
+    pip install --pre oneflow -f https://oneflow-pro.oss-cn-beijing.aliyuncs.com/branch/master_open_source/cu118 && \
+    pip cache purge
+
+RUN pip install jupyterlab && pip cache purge
+
+RUN git clone https://github.com/kopyl/oneflow-diffusers.git /oneflow-diffusers
+RUN pip install -e /oneflow-diffusers && pip cache purge
+
+COPY examples/text_to_image.py /text_to_image_example.py
+COPY examples/text_to_image_no_args.py /text_to_image_no_args_example.py
+COPY examples/notebooks/run-text-to-image-command.ipynb /run-text-to-image-command.ipynb
+
+CMD ["jupyter-lab", "--allow-root", "--ip", "0.0.0.0", "--NotebookApp.token=''", "--notebook-dir", "/", "--NotebookApp.allow_origin='*'", "--NotebookApp.allow_remote_access=1"]
+
+# depot project name: `kopyl-oneflow-diffusers`
+# depot build command: `sudo depot build --project f3fwh7xht9 . -t kopyl/oneflow-diffusers:jupyterlab --push`
